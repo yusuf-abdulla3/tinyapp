@@ -8,6 +8,24 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        
+       <% if (username) { %>
+        <h5 >
+          Hello <%=username%>
+
+        </h5>
+
+         <form  method="POST" action="/logout" >
+            <button type="submit" class="btn btn-primary" name = "username">logout</button>
+        </form>
+      <% } else {%>
+        <form  method="POST" action="/login" >
+            <label for = "username">Enter Username:</label>
+            <input type="text" name="username" placeholder="example_username">
+            <button type="submit" class="btn btn-primary">login</button>
+        </form>
+        <% } %>
+      
       </div>
     </div>
   </nav>

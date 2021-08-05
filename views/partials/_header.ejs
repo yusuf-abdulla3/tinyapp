@@ -19,10 +19,13 @@
             <button type="submit" class="btn btn-primary" name = "email">logout</button>
         </form>
       <% } else {%>
-        <form  method="POST" action="/login" >
-            <label for = "email">Enter Email:</label>
-            <input type="email" name="email" placeholder="example_email@gmail.com">
-            <button type="submit" class="btn btn-primary">login</button>
+        
+        <form  method="GET" action="/urls_login" >
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+
+        <form  method="GET" action="/urls_register" >
+          <button type="submit" class="btn btn-primary">Register</button>
         </form>
         <% } %>
       

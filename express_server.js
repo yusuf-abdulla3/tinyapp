@@ -44,7 +44,7 @@ const userDatabase = {
 
 // Creating an HTML index page using urlDatabase. templateVars imports urlDatabase to urls_index.ejs
 app.get("/urls", (req, res) => {
-  
+
   const templateVars = { 
     urls: urlsForUser(urlDatabase, req.cookies.userId),
     user: userDatabase[req.cookies.userId]
@@ -53,14 +53,14 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-   console.log(req.body);
+  
   const shortURL = generateRandomString();
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
       userID: req.cookies.userId
-    },
+    }
     res.redirect(`/urls/${shortURL}`);
-})
+});
 
 app.get("/u/:shortURL", (req, res) => {
   console.log(req.params)
@@ -102,30 +102,40 @@ app.get("/urls/new", (req, res) => {
 
 // Creating the shortURL endpoint
 app.get("/urls/:shortURL", (req, res) => {
-  console.log(req.params.shortURL)
+ 
   const templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: userDatabase[req.cookies.userId] 
   };
   res.render("urls_show", templateVars);
+
+  res.send("You're not authorized to view this page");
 });
+
 
 // /:shortURL get & post requests
 
 // Delete a url and redirect back to the /urls page
 app.post('/urls/:shortURL/delete', (req, res) => {
+  const userId = req.cookies.userId
+  if (userId) {
   const shortURL = req.params.shortURL;
+  console.log(shortURL);
   //Deleting URL from the database
   delete urlDatabase[shortURL];
-
   res.redirect('/urls');
-})
+  } else {
+    res.send("You're not authorized to make any changes")
+  } 
+});
 
 //Update an existing url
 
 app.post('/urls/:shortURL', (req, res) => {
 
+  const userId = req.cookies.userId; 
+  if (userId) {
   const shortURL = req.params.shortURL;
   //extract the new url value from the form => req.body
   const longURL = req.body.longURL;
@@ -134,6 +144,9 @@ app.post('/urls/:shortURL', (req, res) => {
   urlDatabase[shortURL].longURL = longURL;
   
   res.redirect('/urls');
+  } else {
+    res.send("You're not authorized to access this page");
+  }
 
 })
 

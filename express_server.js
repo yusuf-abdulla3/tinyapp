@@ -2,54 +2,73 @@ const express = require('express');
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
-const { generateRandomString, emailInUse, checkPassword, findUserIDFromEmail } = require('./helpers.js') 
+const { generateRandomString, emailInUse, checkPassword, findUserIDFromEmail, checkCookie, urlsForUser } = require('./helpers.js') 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
-//URL Database containing object with shortURL and longURL 
+//URL Database  
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "userRandomID"
+  },
+
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "user2RandomID"
+  }
 };
 
-//User Database containing user ID, email and password
+//User Database 
 const userDatabase = { 
   "userRandomID": {
     userId: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "1234"
   },
  "user2RandomID": {
     userId: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "4567"
+  },
+  "abc": {
+    userId: "abc", 
+    email: "abc@example.com", 
+    password: "1357"
   }
 }
 //  URL index get & post requests
 
 // Creating an HTML index page using urlDatabase. templateVars imports urlDatabase to urls_index.ejs
 app.get("/urls", (req, res) => {
- 
+  
   const templateVars = { 
-    urls: urlDatabase,
-    userObject: userDatabase[req.cookies.userId]
+    urls: urlsForUser(urlDatabase, req.cookies.userId),
+    user: userDatabase[req.cookies.userId]
   };
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
+   console.log(req.body);
   const shortURL = generateRandomString();
-    urlDatabase[shortURL] = req.body.longURL
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: req.cookies.userId
+    },
     res.redirect(`/urls/${shortURL}`);
 })
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[`${req.params.shortURL}`]; 
-  res.redirect(longURL);
+  console.log(req.params)
+  if (urlDatabase[req.params.shortURL]) {
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  } else {
+    res.status(404).send("This TinyURL does not exist.")
+  }
 });
 
 // Home page responds with hello when accessed
@@ -64,18 +83,30 @@ app.get("/urls.json", (req, res) => {
 
 // Rendering page for creating a new URL
 app.get("/urls/new", (req, res) => {
+  
+  if (checkCookie(userDatabase, req.cookies.userId)) {
+    res.redirect('/urls_login')
+  
+  } else {
+
   const templateVars = { 
     urls: urlDatabase,
-    userObject: userDatabase[req.cookies.userId]
-  };
-  res.render("urls_new", templateVars);
+    user: userDatabase[req.cookies.userId]
+  }
+  
+  res.render("urls_new", templateVars)
+  
+  }
+
 });
 
 // Creating the shortURL endpoint
 app.get("/urls/:shortURL", (req, res) => {
+  console.log(req.params.shortURL)
   const templateVars = { 
-    shortURL: req.params.shortURL, longURL: urlDatabase[`${req.params.shortURL}`],
-    userObject: userDatabase[req.cookies.userId] 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: userDatabase[req.cookies.userId] 
   };
   res.render("urls_show", templateVars);
 });
@@ -100,7 +131,7 @@ app.post('/urls/:shortURL', (req, res) => {
   const longURL = req.body.longURL;
   
   // updating the url value for that id
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL].longURL = longURL;
   
   res.redirect('/urls');
 
@@ -133,14 +164,14 @@ app.post('/login', (req, res) => {
 app.get('/urls_login', (req, res) => {
   res.render("urls_login")
 })
-//log post request
+// log post request
 app.post('/logout', (req, res) => {
   res.clearCookie("userId")
   res.redirect('/urls');
 
 })
 
-// /register get & post requests 
+// register get & post requests 
 app.get('/urls_register', (req, res) => {
 
   res.render("urls_register");
@@ -161,17 +192,17 @@ app.post('/urls_register', (req, res) => {
     res.status(400).send('This Email address is already in use.');
   }
   
-  const createNewUser = (userDatabase, userObject) => {
-    if (!userDatabase[userObject.userId]) {
-      userDatabase[userId] = userObject
-      return userObject
+  const createNewUser = (userDatabase, user) => {
+    if (!userDatabase[user.userId]) {
+      userDatabase[userId] = user;
+      return user;
     }
-    return null
-  }
+    return null;
+  };
 
   const user = createNewUser(userDatabase, userObject)
   if (user) {
-    res.cookie("userId", user.userId)
+    res.cookie("userId", userObject.userId)
 
     return res.redirect("/urls")
   }
@@ -179,8 +210,6 @@ app.post('/urls_register', (req, res) => {
   res.redirect("/urls_register")
 
 })
-
-
 
 
 

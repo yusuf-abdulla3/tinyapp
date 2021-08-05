@@ -11,6 +11,7 @@
 </head>
 <body>
   <main style="margin: 1em;">
+    
     <h3>My URLs</h3>
     <table class="table">
       <thead>
@@ -20,10 +21,16 @@
         </tr>
       </thead>
       <tbody>
+      <% if (!user) { %>
+          <div class="alert">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            <a href = "/urls_login">Login</a> or <a href = "/urls_register">Register</a> here to view or start creating your very own TinyURLs!
+          </div>
+       <% } else { %>
         <% for(let url in urls) { %>
           <tr>
             <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].longURL %></td>
             <td> <form method="POST" action="/urls/<%= url %>/delete"><input type = "submit" value = "Delete"> </form>
             <td>
               <a href= "/urls/<%= url %>">
@@ -33,6 +40,7 @@
             
           </tr>
         <% } %>
+      <% } %>
       </tbody>
     </table>
   </main>

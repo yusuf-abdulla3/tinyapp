@@ -117,15 +117,3 @@ describe('urlsForUser', () => {
   expect(urlsForUserObj).to.deep.equal(expectedOutput);
   });
 });
-
-
-
-// const urlsForUser = (urlDatabase, id) => {
-//   const urlsObj = {};
-//   for (const shortURL in urlDatabase) {
-//     if (urlDatabase[shortURL].userID === id) {
-//       urlsObj[shortURL] = urlDatabase[shortURL];
-//     }
-//   }
-//   return urlsObj;
-// };

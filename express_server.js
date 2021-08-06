@@ -21,12 +21,12 @@ app.set("view engine", "ejs");
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "userRandomID"
+    userId: "userRandomID"
   },
 
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "user2RandomID"
+    userId: "user2RandomID"
   }
 };
 
@@ -53,6 +53,11 @@ for (const user in userDatabase) {
   userDatabase[user].password = bcrypt.hashSync(userDatabase[user].password, 10);
 }
 
+//Shows the url database object in json format
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
 //  URL index get & post requests
 // Creating an HTML index page using urlDatabase. templateVars imports urlDatabase to urls_index.ejs
 app.get("/urls", (req, res) => {
@@ -70,9 +75,35 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.userId
+    userId: req.session.userId
   };
   res.redirect(`/urls/${shortURL}`);
+});
+
+// Home page responds with hello when accessed
+app.get("/", (req, res) => {
+  const user = req.session.userId;
+  if (user) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/urls_login");
+  }
+});
+
+// Rendering page for creating a new URL
+app.get("/urls/new", (req, res) => {
+  
+  if (!checkCookie(userDatabase, req.session.userId)) {
+    res.redirect('/urls_login');
+  
+  } else {
+
+    const templateVars = {
+      urls: urlDatabase,
+      user: userDatabase[req.session.userId]
+    };
+    res.render("urls_new", templateVars);
+  }
 });
 
 // /u/:shortURL GET request
@@ -85,31 +116,6 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-// Home page responds with hello when accessed
-app.get("/", (req, res) => {
-  res.redirect("/urls");
-});
-
-//Shows the object in json format
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// Rendering page for creating a new URL
-app.get("/urls/new", (req, res) => {
-  
-  if (checkCookie(userDatabase, req.session.userId)) {
-    res.redirect('/urls_login');
-  
-  } else {
-
-    const templateVars = {
-      urls: urlDatabase,
-      user: userDatabase[req.session.userId]
-    };
-    res.render("urls_new", templateVars);
-  }
-});
 
 // Creating the shortURL endpoint
 app.get("/urls/:shortURL", (req, res) => {
@@ -124,7 +130,6 @@ app.get("/urls/:shortURL", (req, res) => {
     res.send("You're not authorized to view this page");
   }
 });
-
 
 // /:shortURL/delete POST request
 // Delete a url and redirect back to the /urls page
@@ -169,7 +174,7 @@ app.post('/login', (req, res) => {
   } else {
     const userId = getUserByEmail(userEmail, userDatabase);
     
-  // comparing the inputted user password with the hashed user password in the database
+    // comparing the inputted user password with the hashed user password in the database
     if (!bcrypt.compareSync(userPassword, userDatabase[userId].password)) {
       res.status(400).send("The password you've entered is incorrect.");
     } else {
@@ -227,10 +232,8 @@ app.post('/urls_register', (req, res) => {
     req.session.userId = userId;
     return res.redirect("/urls");
   }
-  
 
 });
-
 
 
 // server listening

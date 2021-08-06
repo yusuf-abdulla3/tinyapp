@@ -9,11 +9,11 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         
-       <% if (userObject) { %>
-        <h5 >
-          Hello <%=userObject.email%>
+       <% if (user) { %>
+        <p>
+          Hello <%=user.email%>
 
-        </h5>
+        </p>
 
          <form  method="POST" action="/logout" >
             <button type="submit" class="btn btn-primary" name = "email">logout</button>
@@ -21,11 +21,11 @@
       <% } else {%>
         
         <form  method="GET" action="/urls_login" >
-          <button type="submit" class="btn btn-primary">Login</button>
+          <button type="submit" class='btn btn-primary'>Login</button>
         </form>
 
         <form  method="GET" action="/urls_register" >
-          <button type="submit" class="btn btn-primary">Register</button>
+          <button type="submit" class='btn btn-primary'>Register</button>
         </form>
         <% } %>
       

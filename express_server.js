@@ -48,11 +48,10 @@ const userDatabase = {
     password: "1357"
   }
 };
-
+// Hashing all of the passwords in the database using bcrypt
 for (const user in userDatabase) {
   userDatabase[user].password = bcrypt.hashSync(userDatabase[user].password, 10);
 }
-console.log(userDatabase);
 
 //  URL index get & post requests
 // Creating an HTML index page using urlDatabase. templateVars imports urlDatabase to urls_index.ejs
@@ -65,6 +64,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// urls POST request
 app.post("/urls", (req, res) => {
   
   const shortURL = generateRandomString();
@@ -75,17 +75,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// /u/:shortURL GET request
+//user is able to use this shortURL to access the page of the longURL
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   } else {
-    res.status(404).send("This TinyURL does not exist.");
+    res.status(404).send("This URL does not exist.");
   }
 });
 
 // Home page responds with hello when accessed
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 //Shows the object in json format
@@ -105,11 +107,8 @@ app.get("/urls/new", (req, res) => {
       urls: urlDatabase,
       user: userDatabase[req.session.userId]
     };
-  
     res.render("urls_new", templateVars);
-  
   }
-
 });
 
 // Creating the shortURL endpoint
@@ -127,8 +126,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
-// /:shortURL get & post requests
-
+// /:shortURL/delete POST request
 // Delete a url and redirect back to the /urls page
 app.post('/urls/:shortURL/delete', (req, res) => {
   if (req.session.userId) {
@@ -143,7 +141,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 //Update an existing url
-
+// /urls/:shortURL POST request
 app.post('/urls/:shortURL', (req, res) => {
 
   if (req.session.userId) {
@@ -158,14 +156,12 @@ app.post('/urls/:shortURL', (req, res) => {
   } else {
     res.send("You're not authorized to access this page");
   }
-
 });
 
-// /login post & get requests
+// login POST request
 app.post('/login', (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
-  console.log("database: " + userDatabase, "sessionId: " + req.session.userId);
   
   if (!emailInUse(userDatabase, userEmail)) {
     res.status(400).send("A user with that email cannot be found");
@@ -173,7 +169,7 @@ app.post('/login', (req, res) => {
   } else {
     const userId = getUserByEmail(userEmail, userDatabase);
     
-  
+  // comparing the inputted user password with the hashed user password in the database
     if (!bcrypt.compareSync(userPassword, userDatabase[userId].password)) {
       res.status(400).send("The password you've entered is incorrect.");
     } else {
@@ -183,21 +179,21 @@ app.post('/login', (req, res) => {
       
     }
   }
-
- 
 });
 
+// login GET request
 app.get('/urls_login', (req, res) => {
   res.render("urls_login");
 });
-// log post request
+
+// logout POST request
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/urls');
 
 });
 
-// register get & post requests
+// register GET request
 app.get('/urls_register', (req, res) => {
   const user = req.session.userId;
   if (user) {
@@ -207,6 +203,7 @@ app.get('/urls_register', (req, res) => {
 
 });
 
+// register POST request
 app.post('/urls_register', (req, res) => {
   const registeredEmail = req.body.email;
   const registeredPassword = req.body.password;
@@ -219,6 +216,8 @@ app.post('/urls_register', (req, res) => {
     res.status(400).send('This Email address is already in use.');
   
   } else {
+    
+    //creating new user using a randomized userId and setting up a new object containing the new userId, email and hashed password
     const userId = generateRandomString();
     userDatabase[userId] = {
       userId,

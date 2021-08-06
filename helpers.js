@@ -1,4 +1,4 @@
-// Generating a random 6 character alphanumerical string to use as the shortURL
+// Generates a random 6 character alphanumerical string to use as the shortURL
 const generateRandomString = () => {
   return Math.random().toString(36).slice(2,8)  
 }
@@ -22,14 +22,35 @@ const checkPassword = (userDatabase, password) => {
   return false;
 };
 
-const findUserIDFromEmail = (userDatabase, email) => {
+const getUserByEmail = (email, userDatabase) => {
   for (const user in userDatabase) {
+
     if (userDatabase[user].email === email) {
       return userDatabase[user].userId
     }
   }
   };
 
+  const checkCookie = (userDatabase, cookie) => {
+    for (const user in userDatabase) {
+      if (userDatabase[user].userId === cookie) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const urlsForUser = (urlDatabase, id) => {
+    const urlsObj = {};
+    for (const shortURL in urlDatabase) {
+      if (urlDatabase[shortURL].userId === id) {
+        urlsObj[shortURL] = urlDatabase[shortURL];
+      }
+    }
+    return urlsObj;
+  };
+
+    
 
 
 
@@ -37,5 +58,4 @@ const findUserIDFromEmail = (userDatabase, email) => {
 
 
 
-
-module.exports = { generateRandomString, emailInUse, checkPassword, findUserIDFromEmail };
+module.exports = { generateRandomString, emailInUse, checkPassword, getUserByEmail, checkCookie, urlsForUser };

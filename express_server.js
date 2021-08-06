@@ -27,7 +27,33 @@ const urlDatabase = {
   "9sm5xK": {
     longURL: "http://www.google.com",
     userId: "user2RandomID"
-  }
+  },
+  
+  "c4g5h2": {
+    longURL: "http://www.youtube.com",
+    userId: "userRandomID"
+  },
+
+  "g462gw": {
+    longURL: "http://www.facebook.com/",
+    userId: "userRandomID"
+  },
+
+  "r34t4e": {
+    longURL: "http://www.espn.com/",
+    userId: "userRandomID"
+  },
+
+  "hgr645": {
+    longURL: "http://www.spotify.com/",
+    userId: "userRandomID"
+  },
+
+  "etwt35": {
+    longURL: "http://www.twitter.com/",
+    userId: "user2RandomID"
+  },
+
 };
 
 //User Database
@@ -188,7 +214,10 @@ app.post('/login', (req, res) => {
 
 // login GET request
 app.get('/urls_login', (req, res) => {
-  res.render("urls_login");
+  const templateVars = {
+    user: userDatabase[req.session.userId]
+  };
+  res.render("urls_login", templateVars);
 });
 
 // logout POST request
@@ -201,11 +230,14 @@ app.post('/logout', (req, res) => {
 // register GET request
 app.get('/urls_register', (req, res) => {
   const user = req.session.userId;
+  const templateVars = {
+    urls: urlDatabase,
+    user: userDatabase[req.session.userId]
+  };
   if (user) {
     res.redirect('/urls');
   }
-  res.render("urls_register");
-
+  res.render("urls_register", templateVars);
 });
 
 // register POST request
